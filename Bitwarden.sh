@@ -53,7 +53,7 @@ fi
 while test $# -gt 0; do
     case "$1" in
     -h | --help)
-        echo "$package - Create a tarball of bw-data and upload to gdrive. 1"
+        echo "$package - Create a tarball of bw-data and upload to gdrive."
         echo " "
         echo "$package [options] application [arguments]"
         echo " "
@@ -72,27 +72,27 @@ while test $# -gt 0; do
         echo "REMOTE_DEST: $REMOTE_DEST"
         echo "USER: $USER"
         echo "GROUP: $GROUP"
-        break
-        shift
+        exit 0
         ;;
     *)
-        # Ensure tarball doesn't exist already.
-        sudo rm -rf $TARBALL
-        # Create output dir for backup db.
-        sudo mkdir -p $BACKUP_DIR
-        # Use sqlite3 to properly export the db.
-        sudo sqlite3 /$DATA_DIR/db.sqlite3 ".backup '/$BACKUP_DIR/$BACKUP_FILENAME'"
-        # Create the tarball.
-        sudo tar -zcvf $TARBALL $BACKUP_DIR
-        # Change the user to me.
-        sudo chown $USER:$GROUP $TARBALL
-        # Copy it to remote (gdrive).
-        rclone copy $TARBALL "$REMOTE_DEST/."
-        # Cleanup, remove leftover files.
-        sudo rm -rf $BACKUP_DIR $TARBALL
         break
         ;;
     esac
 done
+
+# Ensure tarball doesn't exist already.
+sudo rm -rf $TARBALL
+# Create output dir for backup db.
+sudo mkdir -p $BACKUP_DIR
+# Use sqlite3 to properly export the db.
+sudo sqlite3 /$DATA_DIR/db.sqlite3 ".backup '/$BACKUP_DIR/$BACKUP_FILENAME'"
+# Create the tarball.
+sudo tar -zcvf $TARBALL $BACKUP_DIR
+# Change the user to me.
+sudo chown $USER:$GROUP $TARBALL
+# Copy it to remote (gdrive).
+rclone copy $TARBALL "$REMOTE_DEST/."
+# Cleanup, remove leftover files.
+sudo rm -rf $BACKUP_DIR $TARBALL
 
 set +e
