@@ -91,7 +91,7 @@ sudo tar -zcvf $TARBALL $BACKUP_DIR
 # Change the user to me.
 sudo chown $USER:$GROUP $TARBALL
 # Copy it to remote (gdrive).
-rclone copy $TARBALL "$REMOTE_DEST/."
+rclone copy $TARBALL "$REMOTE_DEST/"
 # Cleanup, remove leftover files.
 sudo rm -rf $BACKUP_DIR $TARBALL
 
