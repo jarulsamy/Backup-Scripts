@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # A simple script to auto backup the bw-data directory.
 # More useful information here: https://bitwarden.com/help/article/backup-on-premise/
@@ -31,68 +31,28 @@
 # Helpful sets
 set -e
 
-# Date format: YYYY-MM-DD_HH-MM-SS
-CURRENTDATE=$(date +"%Y-%m-%d_%H-%M-%S")
-DATA_DIR=/bw-data
-BACKUP_DIR="$DATA_DIR/db_backup"
-BACKUP_FILENAME="backup.sqlite3"
-TARBALL="/tmp/bw-data_$CURRENTDATE.tar.gz"
+TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+BW_DIR="/bw-data"
+BACKUP_DIR="$BW_DIR/db_backup"
 
-REMOTE_DEST="josh_gdrive:Backups/Bitwarden"
+REMOTE_DEST="josh_gdrive:Backups/Bitwarden/$TIMESTAMP"
+TARBALL="/tmp/bw-data_$TIMESTAMP.tar.gz"
 
-USER=$(whoami)
-GROUP=$(id -gn)
-
-# Ensure script is not run as root
-if ! [ "$EUID" -ne 0 ]; then
-    echo "DO NOT RUN AS ROOT!"
-    exit 1
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
 fi
 
-# Parse CLI arguments.
-while test $# -gt 0; do
-    case "$1" in
-    -h | --help)
-        echo "$package - Create a tarball of bw-data and upload to gdrive."
-        echo " "
-        echo "$package [options] application [arguments]"
-        echo " "
-        echo "options:"
-        echo "-h, --help                show brief help"
-        echo "-d, --dry-run             Dry run, don't actually create an archive."
-        exit 0
-        ;;
-    -d | --dry-run)
-        shift
-        echo "Dry run enabled!"
-        echo "DATA_DIR: $DATA_DIR"
-        echo "BACKUP_DIR: $BACKUP_DIR"
-        echo "BACKUP_FILENAME: $BACKUP_FILENAME"
-        echo "TARBALL: $TARBALL"
-        echo "REMOTE_DEST: $REMOTE_DEST"
-        echo "USER: $USER"
-        echo "GROUP: $GROUP"
-        exit 0
-        ;;
-    *)
-        break
-        ;;
-    esac
-done
+# Ensure tarball doesn't exist
+rm -rf "$TARBALL"
+mkdir -p "$BACKUP_DIR"
+sqlite3 "$BW_DIR/db.sqlite3" ".backup '/$BACKUP_DIR/backup.sqlite3'"
+tar -zcvf "$TARBALL" --exclude="*.png" --exclude="*.miss" --exclude="*.log" "$BW_DIR"
 
-# Ensure tarball doesn't exist already.
-sudo rm -rf $TARBALL
-# Create output dir for backup db.
-sudo mkdir -p $BACKUP_DIR
-# Use sqlite3 to properly export the db.
-sudo sqlite3 /$DATA_DIR/db.sqlite3 ".backup '/$BACKUP_DIR/$BACKUP_FILENAME'"
-# Create the tarball.
-sudo tar -zcvf $TARBALL $BACKUP_DIR
-# Change the user to me.
-sudo chown $USER:$GROUP $TARBALL
-# Copy it to remote (gdrive).
-rclone copy $TARBALL "$REMOTE_DEST/"
-# Cleanup, remove leftover files.
-sudo rm -rf $BACKUP_DIR $TARBALL
+echo "Copying to gdrive"
+rclone copy "$TARBALL" "$REMOTE_DEST/"
+echo "Done copying"
+
+rm -rf $BACKUP_DIR $TARBALL
 
 set +e
