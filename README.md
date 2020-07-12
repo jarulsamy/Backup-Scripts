@@ -1,2 +1,2 @@
 # Backup-Scripts
-A series of scripts used to backup precious server resources. 
+A series of scripts used to backup precious server resources.
