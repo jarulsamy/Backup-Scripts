@@ -14,9 +14,9 @@
 
 # Sample ls -la of /bw-data/
 
-# -rw-r--r--  1 root root 318319887 May  7 14:34 bit.log (NOT BACKUPED UP)
+# -rw-r--r--  1 root root 318319887 May  7 14:34 bit.log (NOT BACKED UP)
 # -rw-r--r--  1 root root    331776 May  7 13:53 db.sqlite3
-# drwxr-xr-x  2 root root     12288 Apr 30 00:58 icon_cache
+# drwxr-xr-x  2 root root     12288 Apr 30 00:58 icon_cache (NOT BACKED UP)
 # -rw-------  1 root root      1190 Mar 10 23:12 rsa_key.der
 # -rw-------  1 root root      1675 Mar 10 23:12 rsa_key.pem
 # -rw-r--r--  1 root root       270 Mar 10 23:12 rsa_key.pub.der
@@ -53,6 +53,6 @@ echo "Copying to gdrive"
 rclone copy "$TARBALL" "$REMOTE_DEST/"
 echo "Done copying"
 
-rm -rf $BACKUP_DIR $TARBALL
+rm -rf "$BACKUP_DIR" "$TARBALL"
 
 set +e
