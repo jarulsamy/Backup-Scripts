@@ -38,21 +38,26 @@ BACKUP_DIR="$BW_DIR/db_backup"
 REMOTE_DEST="josh_gdrive:Backups/Bitwarden/$TIMESTAMP"
 TARBALL="/tmp/bw-data_$TIMESTAMP.tar.gz"
 
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root"
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root"
   exit
 fi
 
 # Ensure tarball doesn't exist
 rm -rf "$TARBALL"
+# Create destination
 mkdir -p "$BACKUP_DIR"
+# Dump sqlite db
 sqlite3 "$BW_DIR/db.sqlite3" ".backup '/$BACKUP_DIR/backup.sqlite3'"
+# Compress whole dir, excluding static files
 tar -zcvf "$TARBALL" --exclude="*.png" --exclude="*.miss" --exclude="*.log" "$BW_DIR"
 
+# Copy to remote
 echo "Copying to gdrive"
 rclone copy "$TARBALL" "$REMOTE_DEST/"
 echo "Done copying"
 
+# Delete tarball
 rm -rf "$BACKUP_DIR" "$TARBALL"
 
 set +e
