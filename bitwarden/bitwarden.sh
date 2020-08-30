@@ -50,7 +50,7 @@ mkdir -p "$BACKUP_DIR"
 # Dump sqlite db
 sqlite3 "$BW_DIR/db.sqlite3" ".backup '/$BACKUP_DIR/backup.sqlite3'"
 # Compress whole dir, excluding static files
-tar -zcvf "$TARBALL" --exclude="*.png" --exclude="*.miss" --exclude="*.log" "$BW_DIR"
+tar -zcvf "$TARBALL" --exclude="*.png" --exclude="*.miss" --exclude="*.log" -C "$(dirname "$BW_DIR")" "$(basename "$BW_DIR")"
 
 # Copy to remote
 echo "Copying to gdrive"
